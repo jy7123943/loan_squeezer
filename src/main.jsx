@@ -463,6 +463,21 @@ function normalizeLoans() {
   return initialLoans;
 }
 
+function scheduledPrincipalPaid(loan, elapsed, totalMonths) {
+  const months = Math.min(Math.max(0, elapsed), totalMonths);
+  if (months <= 0) return 0;
+  if (loan.method === 'bullet') return 0;
+  if (loan.method === 'equalPrincipal') {
+    return loan.principal * months / totalMonths;
+  }
+  const r = loan.rate / 100 / 12;
+  if (r === 0) return loan.principal * months / totalMonths;
+  const pmt = monthlyPaymentByMonths(loan.principal, loan.rate, totalMonths);
+  const growth = (1 + r) ** months;
+  const remaining = loan.principal * growth - pmt * ((growth - 1) / r);
+  return loan.principal - Math.max(0, remaining);
+}
+
 function loanReport(loan) {
   const today = new Date();
   const start = new Date(loan.startYear, loan.startMonth - 1, loan.payDay);
@@ -471,7 +486,7 @@ function loanReport(loan) {
   const totalMonths = monthsBetween(start, maturity);
   const remainingMonths = Math.max(1, totalMonths - elapsed);
   const prepaymentTotal = (loan.prepayments || []).reduce((sum, item) => sum + item.amount, 0);
-  const scheduledPrincipal = Math.min(loan.principal, elapsed * monthlyPaymentByMonths(loan.principal, loan.rate, totalMonths) * (loan.method === 'bullet' ? 0 : 0.42));
+  const scheduledPrincipal = Math.min(loan.principal, scheduledPrincipalPaid(loan, elapsed, totalMonths));
   const paidPrincipal = Math.min(loan.principal, scheduledPrincipal + prepaymentTotal);
   const remainingPrincipal = Math.max(0, loan.principal - paidPrincipal);
   const monthlyInterest = remainingPrincipal * (loan.rate / 100 / 12);
