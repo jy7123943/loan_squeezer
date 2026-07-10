@@ -391,6 +391,7 @@ export const GhostButton = styled.button`
 `;
 
 export const GoldButton = styled(PrimaryButton)`
+  min-height: 48px;
   min-width: 110px;
   width: auto;
   background: ${gold};
@@ -714,6 +715,26 @@ export const TwoCols = styled.div`
   gap: 10px;
 `;
 
+export const TargetHomeGrid = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  gap: 12px;
+  align-items: start;
+
+  > label {
+    min-width: 0;
+  }
+
+  > label:last-child > div > div {
+    grid-template-columns: minmax(0, 1fr) 24px;
+    gap: 6px;
+  }
+
+  > label:last-child input {
+    padding: 0 10px;
+  }
+`;
+
 export const RangeWrap = styled.div`
   display: grid;
   grid-template-columns: 1fr 52px;
@@ -780,6 +801,7 @@ export const GaugeFill = styled.div`
 export const InlineAction = styled.div`
   display: grid;
   grid-template-columns: 1fr auto;
+  align-items: start;
   gap: 9px;
 `;
 

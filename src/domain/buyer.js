@@ -2,6 +2,10 @@ import { initialBuyer } from '../constants';
 import { clamp, monthlyPayment, readableMoney } from '../utils';
 
 export function normalizeBuyerForm(form = initialBuyer) {
+  const hasStoredTargetHomePrice = Object.prototype.hasOwnProperty.call(
+    form,
+    "targetHomePrice",
+  );
   const assets =
     Array.isArray(form.assets) && form.assets.length > 0
       ? form.assets
@@ -26,6 +30,9 @@ export function normalizeBuyerForm(form = initialBuyer) {
     annualIncome: form.annualIncome ?? (form.salary || 3800000) * 12,
     spouseAnnualIncome:
       form.spouseAnnualIncome ?? (form.spouseSalary || 0) * 12,
+    targetHomePriceMode:
+      form.targetHomePriceMode ||
+      (hasStoredTargetHomePrice ? "specific" : initialBuyer.targetHomePriceMode),
     childrenCount: Number(form.childrenCount ?? 0),
     areaM2: Number(form.areaM2 ?? initialBuyer.areaM2),
     marriageYears: Number(form.marriageYears ?? initialBuyer.marriageYears),
@@ -104,13 +111,25 @@ function evaluatePolicy(ctx, policy) {
       maxPurchase - ctx.availableAssets,
     ),
   );
-  const targetLoanNeed = Math.max(0, ctx.targetHomePrice - ctx.availableAssets);
-  const targetCaps = [
-    { key: "product", amount: productLimit },
-    { key: "ltv", amount: ctx.targetHomePrice * ltv },
-    { key: "dti", amount: debtLimit },
-    { key: "price", amount: ctx.targetHomePrice <= priceLimit ? Infinity : 0 },
-  ];
+  const targetLoanNeed = ctx.hasTargetHomePrice
+    ? Math.max(0, ctx.targetHomePrice - ctx.availableAssets)
+    : 0;
+  const targetCaps = ctx.hasTargetHomePrice
+    ? [
+        { key: "product", amount: productLimit },
+        { key: "ltv", amount: ctx.targetHomePrice * ltv },
+        { key: "dti", amount: debtLimit },
+        {
+          key: "price",
+          amount: ctx.targetHomePrice <= priceLimit ? Infinity : 0,
+        },
+      ]
+    : [
+        { key: "product", amount: productLimit },
+        { key: "dti", amount: debtLimit },
+        { key: "price", amount: priceLimit },
+        { key: "purchasePower", amount: assetPriceLimit },
+      ];
   const limiting = targetCaps.reduce(
     (min, item) => (item.amount < min.amount ? item : min),
     targetCaps[0],
@@ -118,22 +137,22 @@ function evaluatePolicy(ctx, policy) {
   const eligibilityReasons = policy.eligibility(ctx);
   const reasons = [...eligibilityReasons];
 
-  if (ctx.targetHomePrice > priceLimit) {
+  if (ctx.hasTargetHomePrice && ctx.targetHomePrice > priceLimit) {
     reasons.push(
       `희망 주택가격이 상품 대상 주택가격 ${readableMoney(priceLimit)}을 초과합니다.`,
     );
   }
-  if (targetLoanNeed > productLimit) {
+  if (ctx.hasTargetHomePrice && targetLoanNeed > productLimit) {
     reasons.push(
       `필요 대출액이 ${policy.name}의 상품별 대출한도 ${readableMoney(productLimit)}을 초과합니다.`,
     );
   }
-  if (targetLoanNeed > ctx.targetHomePrice * ltv) {
+  if (ctx.hasTargetHomePrice && targetLoanNeed > ctx.targetHomePrice * ltv) {
     reasons.push(
       `필요 대출액이 LTV ${Math.round(ltv * 100)}% 한도를 초과합니다.`,
     );
   }
-  if (targetLoanNeed > debtLimit) {
+  if (ctx.hasTargetHomePrice && targetLoanNeed > debtLimit) {
     reasons.push(`기존 부채를 반영한 ${policy.debtLabel} 한도를 초과합니다.`);
   }
 
@@ -148,12 +167,14 @@ function evaluatePolicy(ctx, policy) {
     maxPurchase,
     maxLoan: maxLoanAtMaxPurchase,
     targetLoanNeed,
-    targetPossibleLoan: Math.min(
-      productLimit,
-      ctx.targetHomePrice * ltv,
-      debtLimit,
-      ctx.targetHomePrice,
-    ),
+    targetPossibleLoan: ctx.hasTargetHomePrice
+      ? Math.min(
+          productLimit,
+          ctx.targetHomePrice * ltv,
+          debtLimit,
+          ctx.targetHomePrice,
+        )
+      : null,
     limitingLabel: capLabel(limiting.key),
     limitingAmount:
       limiting.amount === Infinity ? maxLoanAtMaxPurchase : limiting.amount,
@@ -174,9 +195,9 @@ function policyEngines() {
       );
     if (ctx.netWorth > 511000000)
       reasons.push("순자산가액이 2026년 기준 5.11억원을 초과합니다.");
-    if (ctx.areaM2 > 85)
+    if (ctx.hasTargetHomePrice && ctx.areaM2 > 85)
       reasons.push("전용면적 85㎡ 이하 주택 요건을 초과합니다.");
-    if (ctx.targetHomePrice > homePriceLimit)
+    if (ctx.hasTargetHomePrice && ctx.targetHomePrice > homePriceLimit)
       reasons.push(
         `대상 주택가격 ${readableMoney(homePriceLimit)} 기준을 초과합니다.`,
       );
@@ -283,6 +304,7 @@ export function buyerReport(form) {
       ? clamp(form.spouseAnnualIncome, 0, 10000000000)
       : 0;
   const annualIncome = ownAnnualIncome + spouseAnnualIncome;
+  const hasTargetHomePrice = form.targetHomePriceMode === "specific";
   const childrenCount = Math.max(
     Number(form.childrenCount) || 0,
     form.multiChild ? 3 : 0,
@@ -295,6 +317,7 @@ export function buyerReport(form) {
     annualIncome,
     netWorth: clamp(form.netWorth, 0, 100000000000),
     existingDebtMonthly: clamp(form.existingDebtMonthly, 0, 1000000000),
+    hasTargetHomePrice,
     targetHomePrice: clamp(form.targetHomePrice, 0, 100000000000),
     areaM2: Number(form.areaM2) || 0,
     firstHome: form.firstHome === "yes",
@@ -339,6 +362,7 @@ export function buyerReport(form) {
     loan,
     annualIncome,
     availableAssets,
+    hasTargetHomePrice,
     bestPolicy: best,
     hasTargetPossiblePolicy: targetPossibleResults.length > 0,
     policyResults,

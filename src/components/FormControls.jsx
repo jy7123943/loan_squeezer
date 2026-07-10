@@ -44,11 +44,22 @@ export function ToggleRow({ icon, label, checked, onChange }) {
 }
 
 export function MoneyInput({ value, onChange, max = 100000000000 }) {
+  const replaceZeroOnNumberKey = (e) => {
+    if (/^\d$/.test(e.key) && Number(value || 0) === 0) {
+      e.preventDefault();
+      onChange(clamp(e.key, 0, max));
+    }
+  };
+
   return (
     <S.InputWithAssist>
       <S.TextInput
         inputMode="numeric"
         value={Number(value || 0).toLocaleString("ko-KR")}
+        onFocus={(e) => {
+          if (Number(value || 0) === 0) e.currentTarget.select();
+        }}
+        onKeyDown={replaceZeroOnNumberKey}
         onChange={(e) =>
           onChange(clamp(e.target.value.replaceAll(",", ""), 0, max))
         }
@@ -59,12 +70,23 @@ export function MoneyInput({ value, onChange, max = 100000000000 }) {
 }
 
 export function NumberInput({ value, onChange, suffix, min = "0" }) {
+  const replaceZeroOnNumberKey = (e) => {
+    if (/^\d$/.test(e.key) && Number(value || 0) === 0) {
+      e.preventDefault();
+      onChange(Number(e.key));
+    }
+  };
+
   return (
     <S.InlineNumber>
       <S.TextInput
         type="number"
         min={min}
         value={value}
+        onFocus={(e) => {
+          if (Number(value || 0) === 0) e.currentTarget.select();
+        }}
+        onKeyDown={replaceZeroOnNumberKey}
         onChange={(e) => onChange(Number(e.target.value))}
       />
       <span>{suffix}</span>

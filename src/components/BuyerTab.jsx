@@ -50,6 +50,9 @@ export function BuyerTab({ onAd }) {
     onAd();
   };
 
+  const areaPyeongType =
+    Math.round((Number(form.areaM2 || 0) / 0.7 / 3.3058) * 10) / 10;
+
   return (
     <S.Stack>
       <S.Duo>
@@ -136,32 +139,48 @@ export function BuyerTab({ onAd }) {
               onChange={(value) => update({ existingDebtMonthly: value })}
             />
           </Field>
-          <Field label="희망 주택가격">
-            <MoneyInput
-              value={form.targetHomePrice}
-              onChange={(value) => update({ targetHomePrice: value })}
+          <Segment
+            label="희망 주택가격"
+            value={form.targetHomePriceMode}
+            onChange={(targetHomePriceMode) => update({ targetHomePriceMode })}
+            options={[
+              ["auto", "입력 안 함"],
+              ["specific", "직접 입력"],
+            ]}
+          />
+          {form.targetHomePriceMode === "specific" && (
+            <S.TargetHomeGrid>
+              <Field label="희망 주택가격 입력">
+                <MoneyInput
+                  value={form.targetHomePrice}
+                  onChange={(value) => update({ targetHomePrice: value })}
+                />
+              </Field>
+              <Field label="전용면적">
+                <S.InputWithAssist>
+                  <NumberInput
+                    value={form.areaM2}
+                    min="0"
+                    onChange={(value) => update({ areaM2: value })}
+                    suffix="㎡"
+                  />
+                  <S.MoneyAssist>
+                    약 {areaPyeongType.toLocaleString("ko-KR")}평형
+                  </S.MoneyAssist>
+                </S.InputWithAssist>
+              </Field>
+            </S.TargetHomeGrid>
+          )}
+          <Field label="자녀 수">
+            <NumberInput
+              value={form.childrenCount}
+              min="0"
+              onChange={(value) =>
+                update({ childrenCount: value, multiChild: value >= 3 })
+              }
+              suffix="명"
             />
           </Field>
-          <S.TwoCols>
-            <Field label="전용면적">
-              <NumberInput
-                value={form.areaM2}
-                min="0"
-                onChange={(value) => update({ areaM2: value })}
-                suffix="㎡"
-              />
-            </Field>
-            <Field label="자녀 수">
-              <NumberInput
-                value={form.childrenCount}
-                min="0"
-                onChange={(value) =>
-                  update({ childrenCount: value, multiChild: value >= 3 })
-                }
-                suffix="명"
-              />
-            </Field>
-          </S.TwoCols>
           <Segment
             label="무주택 여부"
             value={form.isHomeless}
@@ -218,12 +237,14 @@ export function BuyerTab({ onAd }) {
           </S.PanelTitle>
           <S.BigResult>최대 {eok(report.homePrice)} 원대</S.BigResult>
           <S.ResultCopy>
-            {report.hasTargetPossiblePolicy
-              ? `희망 주택가격은 ${report.policyResults
-                  .filter((policy) => policy.possible)
-                  .map((policy) => policy.name)
-                  .join(", ")} 기준으로 검토 가능합니다.`
-              : `희망 주택가격은 현재 조건으로 어렵고, ${report.bestPolicy.name} 기준 최대 매수 가능 범위를 표시합니다.`}
+            {!report.hasTargetHomePrice
+              ? `${report.bestPolicy.name} 기준으로 현재 조건에서 살 수 있는 최대 범위를 표시합니다.`
+              : report.hasTargetPossiblePolicy
+                ? `희망 주택가격은 ${report.policyResults
+                    .filter((policy) => policy.possible)
+                    .map((policy) => policy.name)
+                    .join(", ")} 기준으로 검토 가능합니다.`
+                : `희망 주택가격은 현재 조건으로 어렵고, ${report.bestPolicy.name} 기준 최대 매수 가능 범위를 표시합니다.`}
           </S.ResultCopy>
           <S.MetricGrid>
             <Metric

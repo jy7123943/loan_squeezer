@@ -13,6 +13,7 @@ export const initialBuyer = {
   assets: [{ id: "asset-cash", name: "예금/현금", amount: 80000000 }],
   netWorth: 80000000,
   existingDebtMonthly: 0,
+  targetHomePriceMode: "auto",
   targetHomePrice: 500000000,
   areaM2: 84,
   married: "single",
