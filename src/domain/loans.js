@@ -5,9 +5,9 @@ export function createLoan() {
   const now = new Date();
   return {
     id: `loan-${Date.now()}`,
-    name: "새 대출",
-    principal: 100000000,
-    rate: 4.5,
+    name: "",
+    principal: 0,
+    rate: 0,
     type: "mortgage",
     method: "equalPayment",
     payDay: 15,
@@ -21,7 +21,7 @@ export function createLoan() {
 
 export function normalizeLoans() {
   const savedLoans = load(STORAGE_KEYS.loans, null);
-  if (Array.isArray(savedLoans) && savedLoans.length > 0) {
+  if (Array.isArray(savedLoans)) {
     return savedLoans.map((loan) => ({
       ...loan,
       prepayments: loan.prepayments || [],
@@ -33,7 +33,11 @@ export function normalizeLoans() {
   if (oldLoan?.principal) {
     return [
       {
-        ...initialLoans[0],
+        type: "mortgage",
+        method: "equalPayment",
+        payDay: 15,
+        startYear: new Date().getFullYear(),
+        startMonth: new Date().getMonth() + 1,
         ...oldLoan,
         id: "migrated-loan",
         name: "기존 대출",

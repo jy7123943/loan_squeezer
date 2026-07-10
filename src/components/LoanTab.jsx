@@ -15,6 +15,7 @@ export function LoanTab({ onAd }) {
   const [editingLoan, setEditingLoan] = useState(null);
   const [prepayValues, setPrepayValues] = useState({});
   const portfolio = useMemo(() => portfolioReport(loans), [loans]);
+  const hasLoans = loans.length > 0;
 
   const persistLoans = (next) => {
     setLoans(next);
@@ -53,13 +54,14 @@ export function LoanTab({ onAd }) {
       <S.Dday urgent={(portfolio.nearest?.report.dday || 99) <= 3}>
         <S.DdayHeader>
           <BellRing size={22} />
-          <span>가장 가까운 대출금 출금까지</span>
+          <span>{hasLoans ? "가장 가까운 대출금 출금까지" : "등록된 대출이 없습니다"}</span>
         </S.DdayHeader>
         <S.DdayBody>
-          <strong>{ddayLabel(portfolio.nearest?.report.dday)}</strong>
+          <strong>{hasLoans ? ddayLabel(portfolio.nearest?.report.dday) : "D-Day"}</strong>
           <S.DdayMeta>
-            {portfolio.nearest?.loan.name} ·{" "}
-            {shortKoreanDate(portfolio.nearest?.report.nextPay)}
+            {hasLoans
+              ? `${portfolio.nearest?.loan.name} · ${shortKoreanDate(portfolio.nearest?.report.nextPay)}`
+              : "대출을 추가하면 출금 D-Day를 보여드려요"}
           </S.DdayMeta>
         </S.DdayBody>
       </S.Dday>
@@ -110,8 +112,9 @@ export function LoanTab({ onAd }) {
         </S.Panel>
       </S.Duo>
 
-      <S.LoanCardGrid>
-        {portfolio.reports.map(({ loan, report }) => (
+      {hasLoans ? (
+        <S.LoanCardGrid>
+          {portfolio.reports.map(({ loan, report }) => (
           <S.LoanCard key={loan.id}>
             <S.LoanCardTop>
               <div>
@@ -187,8 +190,15 @@ export function LoanTab({ onAd }) {
               </div>
             </S.BenefitBox>
           </S.LoanCard>
-        ))}
-      </S.LoanCardGrid>
+          ))}
+        </S.LoanCardGrid>
+      ) : (
+        <S.EmptyState>
+          <Landmark size={22} />
+          <strong>아직 등록된 대출이 없어요</strong>
+          <p>대출 추가하기를 눌러 첫 대출의 원금, 금리, 출금일을 입력해 주세요.</p>
+        </S.EmptyState>
+      )}
 
       {editingLoan && (
         <LoanEditorModal

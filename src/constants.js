@@ -8,14 +8,14 @@ export const STORAGE_KEYS = {
 };
 
 export const initialBuyer = {
-  annualIncome: 45600000,
+  annualIncome: 0,
   spouseAnnualIncome: 0,
-  assets: [{ id: "asset-cash", name: "예금/현금", amount: 80000000 }],
-  netWorth: 80000000,
+  assets: [{ id: "asset-cash", name: "", amount: 0 }],
+  netWorth: 0,
   existingDebtMonthly: 0,
   targetHomePriceMode: "auto",
-  targetHomePrice: 500000000,
-  areaM2: 84,
+  targetHomePrice: 0,
+  areaM2: 0,
   married: "single",
   marriageYears: 3,
   firstHome: "yes",
@@ -27,33 +27,4 @@ export const initialBuyer = {
   region: "normal",
 };
 
-export const initialLoans = [
-  {
-    id: "home-main",
-    name: "주택담보대출",
-    principal: 280000000,
-    rate: 4.2,
-    type: "mortgage",
-    method: "equalPayment",
-    payDay: 25,
-    startYear: new Date().getFullYear() - 1,
-    startMonth: 5,
-    maturityYear: new Date().getFullYear() + 29,
-    maturityMonth: 5,
-    prepayments: [],
-  },
-  {
-    id: "credit-bridge",
-    name: "생활비 신용대출",
-    principal: 30000000,
-    rate: 5.8,
-    type: "credit",
-    method: "bullet",
-    payDay: 10,
-    startYear: new Date().getFullYear(),
-    startMonth: 1,
-    maturityYear: new Date().getFullYear() + 3,
-    maturityMonth: 1,
-    prepayments: [],
-  },
-];
+export const initialLoans = [];

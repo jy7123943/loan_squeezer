@@ -581,6 +581,35 @@ export const LoanCardGrid = styled.div`
   }
 `;
 
+export const EmptyState = styled.div`
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 24px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: ${slate};
+  text-align: center;
+
+  svg {
+    color: ${gold};
+  }
+
+  strong {
+    color: ${navy};
+    font-size: 18px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+`;
+
 export const LoanCard = styled.article`
   background: white;
   border: 1px solid ${({ selected }) => (selected ? gold : "#dce3ee")};
