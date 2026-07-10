@@ -119,6 +119,12 @@ function eok(value) {
   return `${amount.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}억`;
 }
 
+function shortKoreanDate(date) {
+  if (!date) return '';
+  const year = String(date.getFullYear()).slice(-2);
+  return `${year}. ${date.getMonth() + 1}. ${date.getDate()}.`;
+}
+
 function readableMoney(value) {
   const amount = Math.max(0, Math.round(Number(value) || 0));
   if (amount === 0) return '0원';
@@ -850,7 +856,10 @@ function LoanTab() {
           <span>가장 가까운 대출금 출금까지</span>
           <strong>{portfolio.nearest?.report.dday === 0 ? 'D-Day' : `D-${portfolio.nearest?.report.dday || 0}`}</strong>
         </div>
-        <small>{portfolio.nearest?.loan.name} · {portfolio.nearest?.report.nextPay.toLocaleDateString('ko-KR')}</small>
+        <DdayMeta urgent={(portfolio.nearest?.report.dday || 99) <= 3}>
+          <b>{portfolio.nearest?.loan.name}</b>
+          <span>{shortKoreanDate(portfolio.nearest?.report.nextPay)}</span>
+        </DdayMeta>
       </Dday>
 
       <Duo>
@@ -931,7 +940,7 @@ function LoanTab() {
           onSave={saveLoan}
         />
       )}
-      {celebrate && <Confetti><PartyPopper size={40} /> 해방 포인트 지급!</Confetti>}
+      {celebrate && <Confetti><PartyPopper size={40} /><span>해방 포인트 지급!</span></Confetti>}
     </Stack>
   );
 }
@@ -1227,8 +1236,9 @@ const MiniButton = styled.button`
 
 const BigAddButton = styled.button`
   min-height: 112px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
   border: 2px solid ${gold};
   border-radius: 8px;
@@ -1237,6 +1247,7 @@ const BigAddButton = styled.button`
   font-size: clamp(20px, 4vw, 28px);
   font-weight: 950;
   cursor: pointer;
+  white-space: nowrap;
 
   svg {
     color: ${gold};
@@ -1323,7 +1334,7 @@ const InputWithAssist = styled.div`
 const MoneyAssist = styled.small`
   color: ${slate};
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 500;
 `;
 
 const InlineNumber = styled.div`
@@ -1732,10 +1743,26 @@ const Dday = styled.div`
     line-height: 1;
   }
 
-  small {
-    margin-left: auto;
-    color: ${({ urgent }) => urgent ? red : '#f4d582'};
+`;
+
+const DdayMeta = styled.div`
+  display: grid;
+  gap: 4px;
+  margin-left: auto;
+  color: inherit;
+  text-align: left;
+  min-width: 118px;
+
+  b,
+  span {
+    color: inherit;
+    font-size: clamp(16px, 3.5vw, 24px);
+    line-height: 1.2;
     font-weight: 900;
+  }
+
+  span {
+    color: ${({ urgent }) => urgent ? red : '#f4d582'};
   }
 `;
 
@@ -1814,13 +1841,19 @@ const Confetti = styled.div`
   position: fixed;
   inset: 0;
   z-index: 20;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   background: rgba(16, 26, 45, 0.72);
   color: white;
   font-size: clamp(28px, 7vw, 54px);
   font-weight: 950;
   text-align: center;
+
+  svg {
+    flex: 0 0 auto;
+  }
 `;
 
 const BannerAd = styled.div`
