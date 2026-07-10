@@ -4,7 +4,6 @@ export const STORAGE_KEYS = {
   buyer: "estate-dday:buyerForm",
   loan: "estate-dday:loanForm",
   loans: "estate-dday:loans",
-  points: "estate-dday:points",
   prepayments: "estate-dday:prepayments",
 };
 

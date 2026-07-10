@@ -59,7 +59,6 @@ export function App() {
   };
 
   const switchTab = (tab) => {
-    if (tab !== activeTab) setShowInterstitial(true);
     replaceTab(tab);
   };
 
@@ -82,7 +81,11 @@ export function App() {
             </S.Header>
 
             <S.Main>
-              {activeTab === 'buy' ? <BuyerTab onAd={() => setShowInterstitial(true)} /> : <LoanTab />}
+              {activeTab === 'buy' ? (
+                <BuyerTab onAd={() => setShowInterstitial(true)} />
+              ) : (
+                <LoanTab onAd={() => setShowInterstitial(true)} />
+              )}
             </S.Main>
 
             <S.BannerAd>AD  |  내 집 마련 금융 정보 배너</S.BannerAd>

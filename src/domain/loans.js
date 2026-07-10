@@ -62,13 +62,18 @@ export function scheduledPrincipalPaid(loan, elapsed, totalMonths) {
   return loan.principal - Math.max(0, remaining);
 }
 
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 export function loanReport(loan) {
-  const today = new Date();
-  const start = new Date(loan.startYear, loan.startMonth - 1, loan.payDay);
+  const today = startOfDay(new Date());
+  const payDay = clamp(loan.payDay, 1, 28);
+  const start = new Date(loan.startYear, loan.startMonth - 1, payDay);
   const maturity = new Date(
     loan.maturityYear,
     loan.maturityMonth - 1,
-    loan.payDay,
+    payDay,
   );
   const elapsed = Math.max(
     0,
@@ -104,9 +109,12 @@ export function loanReport(loan) {
     loan.principal > 0
       ? clamp((paidPrincipal / loan.principal) * 100, 0, 100)
       : 0;
-  const nextPay = new Date(today.getFullYear(), today.getMonth(), loan.payDay);
-  if (today.getDate() > loan.payDay) nextPay.setMonth(nextPay.getMonth() + 1);
-  const dday = Math.ceil((nextPay - today) / (1000 * 60 * 60 * 24));
+  const nextPay = new Date(today.getFullYear(), today.getMonth(), payDay);
+  if (today.getDate() > payDay) nextPay.setMonth(nextPay.getMonth() + 1);
+  const dday = Math.max(
+    0,
+    Math.round((startOfDay(nextPay) - today) / (1000 * 60 * 60 * 24)),
+  );
   const remainingInterest = Math.max(
     0,
     remainingMonths * baseMonthly - remainingPrincipal,

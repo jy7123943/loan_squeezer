@@ -424,6 +424,10 @@ export const MetricCard = styled.div`
   background: #f6f8fb;
   border: 1px solid #e3e8f1;
 
+  &[data-wide="true"] {
+    grid-column: 1 / -1;
+  }
+
   span {
     display: block;
     color: ${slate};
@@ -644,14 +648,15 @@ export const DueBadge = styled.div`
 `;
 
 export const Dday = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-height: 92px;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  min-height: 118px;
   padding: 18px;
   border-radius: 8px;
-  background: ${({ urgent }) => (urgent ? "#fff0ec" : navy)};
-  color: ${({ urgent }) => (urgent ? red : "white")};
+  background: ${navy};
+  color: white;
+  text-align: center;
   border: 2px solid ${({ urgent }) => (urgent ? red : gold)};
   animation: ${({ urgent }) =>
     urgent ? "pulse 1s infinite alternate" : "none"};
@@ -665,41 +670,42 @@ export const Dday = styled.div`
     }
   }
 
-  div {
-    display: grid;
-    gap: 2px;
-  }
-
-  span {
-    font-size: 13px;
-    font-weight: 900;
-  }
-
   strong {
-    font-size: clamp(32px, 8vw, 56px);
+    color: #ff6b60;
+    font-size: clamp(42px, 10vw, 68px);
     line-height: 1;
   }
 `;
 
-export const DdayMeta = styled.div`
-  display: grid;
-  gap: 4px;
-  margin-left: auto;
-  color: inherit;
-  text-align: left;
-  min-width: 118px;
+export const DdayHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #f7f9fc;
 
-  b,
   span {
-    color: inherit;
-    font-size: clamp(16px, 3.5vw, 24px);
-    line-height: 1.2;
+    font-size: 15px;
     font-weight: 900;
   }
+`;
 
-  span {
-    color: ${({ urgent }) => (urgent ? red : "#f4d582")};
-  }
+export const DdayBody = styled.div`
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+`;
+
+export const DdayMeta = styled.span`
+  min-width: 0;
+  color: #edf1f6;
+  font-size: clamp(15px, 3.5vw, 20px);
+  font-weight: 300;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 export const TwoCols = styled.div`
@@ -775,25 +781,6 @@ export const InlineAction = styled.div`
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 9px;
-`;
-
-export const Confetti = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: rgba(16, 26, 45, 0.72);
-  color: white;
-  font-size: clamp(28px, 7vw, 54px);
-  font-weight: 950;
-  text-align: center;
-
-  svg {
-    flex: 0 0 auto;
-  }
 `;
 
 export const BannerAd = styled.div`

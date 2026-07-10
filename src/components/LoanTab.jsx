@@ -1,17 +1,19 @@
 import { useMemo, useState } from 'react';
-import { Banknote, BellRing, CheckCircle2, CircleDollarSign, HandCoins, Landmark, PartyPopper, Pencil, Plus, Trophy, X } from 'lucide-react';
+import { Banknote, BellRing, CircleDollarSign, HandCoins, Landmark, Pencil, Plus, Trophy, X } from 'lucide-react';
 import { STORAGE_KEYS } from '../constants';
 import { createLoan, normalizeLoans, portfolioReport } from '../domain/loans';
-import { clamp, eok, load, readableMoney, save, shortKoreanDate, won } from '../utils';
+import { clamp, eok, save, shortKoreanDate, won } from '../utils';
 import * as S from '../styles';
 import { Field, Metric, MoneyInput, PayRow, Segment } from './FormControls';
 
-export function LoanTab() {
+function ddayLabel(dday) {
+  return `D-${Number.isFinite(dday) ? dday : 0}`;
+}
+
+export function LoanTab({ onAd }) {
   const [loans, setLoans] = useState(() => normalizeLoans());
   const [editingLoan, setEditingLoan] = useState(null);
-  const [points, setPoints] = useState(() => load(STORAGE_KEYS.points, 120));
   const [prepayValues, setPrepayValues] = useState({});
-  const [celebrate, setCelebrate] = useState(false);
   const portfolio = useMemo(() => portfolioReport(loans), [loans]);
 
   const persistLoans = (next) => {
@@ -30,6 +32,7 @@ export function LoanTab() {
       : [loan, ...loans];
     persistLoans(next);
     setEditingLoan(null);
+    onAd?.();
   };
 
   const addPrepayment = (loanId) => {
@@ -43,37 +46,22 @@ export function LoanTab() {
     );
     persistLoans(next);
     setPrepayValues({ ...prepayValues, [loanId]: 1000000 });
-    const nextPoints = points + Math.max(10, Math.round(item.amount / 100000));
-    setPoints(nextPoints);
-    save(STORAGE_KEYS.points, nextPoints);
-    setCelebrate(true);
-    setTimeout(() => setCelebrate(false), 1800);
-  };
-
-  const certify = () => {
-    const nextPoints = points + 70;
-    setPoints(nextPoints);
-    save(STORAGE_KEYS.points, nextPoints);
-    setCelebrate(true);
-    setTimeout(() => setCelebrate(false), 1800);
   };
 
   return (
     <S.Stack>
       <S.Dday urgent={(portfolio.nearest?.report.dday || 99) <= 3}>
-        <BellRing size={24} />
-        <div>
+        <S.DdayHeader>
+          <BellRing size={22} />
           <span>가장 가까운 대출금 출금까지</span>
-          <strong>
-            {portfolio.nearest?.report.dday === 0
-              ? "D-Day"
-              : `D-${portfolio.nearest?.report.dday || 0}`}
-          </strong>
-        </div>
-        <S.DdayMeta urgent={(portfolio.nearest?.report.dday || 99) <= 3}>
-          <b>{portfolio.nearest?.loan.name}</b>
-          <span>{shortKoreanDate(portfolio.nearest?.report.nextPay)}</span>
-        </S.DdayMeta>
+        </S.DdayHeader>
+        <S.DdayBody>
+          <strong>{ddayLabel(portfolio.nearest?.report.dday)}</strong>
+          <S.DdayMeta>
+            {portfolio.nearest?.loan.name} ·{" "}
+            {shortKoreanDate(portfolio.nearest?.report.nextPay)}
+          </S.DdayMeta>
+        </S.DdayBody>
       </S.Dday>
 
       <S.Duo>
@@ -113,12 +101,12 @@ export function LoanTab() {
               label="이번 달 총 출금"
               value={won(portfolio.totalMonthly)}
             />
-            <Metric label="누적 중도상환" value={won(portfolio.totalPrepaid)} />
-            <Metric label="해방 포인트" value={`${points}P`} />
+            <Metric
+              label="누적 중도상환"
+              value={won(portfolio.totalPrepaid)}
+              wide
+            />
           </S.MetricGrid>
-          <S.PrimaryButton onClick={certify}>
-            <CheckCircle2 size={18} /> 이번 달 정상 상환 인증
-          </S.PrimaryButton>
         </S.Panel>
       </S.Duo>
 
@@ -146,7 +134,7 @@ export function LoanTab() {
                   <Pencil size={17} />
                 </S.IconButton>
                 <S.DueBadge urgent={report.dday <= 3}>
-                  {report.dday === 0 ? "오늘" : `D-${report.dday}`}
+                  {ddayLabel(report.dday)}
                 </S.DueBadge>
               </S.CardActions>
             </S.LoanCardTop>
@@ -209,12 +197,6 @@ export function LoanTab() {
           onClose={() => setEditingLoan(null)}
           onSave={saveLoan}
         />
-      )}
-      {celebrate && (
-        <S.Confetti>
-          <PartyPopper size={40} />
-          <span>해방 포인트 지급!</span>
-        </S.Confetti>
       )}
     </S.Stack>
   );

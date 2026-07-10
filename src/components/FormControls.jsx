@@ -72,9 +72,9 @@ export function NumberInput({ value, onChange, suffix, min = "0" }) {
   );
 }
 
-export function Metric({ label, value }) {
+export function Metric({ label, value, wide = false }) {
   return (
-    <S.MetricCard>
+    <S.MetricCard data-wide={wide ? "true" : undefined}>
       <span>{label}</span>
       <strong>{value}</strong>
     </S.MetricCard>
