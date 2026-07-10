@@ -219,7 +219,7 @@ function evaluatePolicy(ctx, policy) {
   const incomeRatio = policy.debtRatio;
   const monthlyLimit = Math.max(0, (ctx.annualIncome * incomeRatio) / 12 - ctx.existingDebtMonthly);
   const debtLimit = principalFromMonthlyPayment(monthlyLimit, policy.rate, 30);
-  const productLimit = policy.loanCap;
+  const productLimit = typeof policy.loanCap === 'function' ? policy.loanCap(ctx) : policy.loanCap;
   const priceLimit = policy.homePriceCap || Infinity;
   const assetPriceLimit = ltv < 1 ? ctx.availableAssets / Math.max(0.01, 1 - ltv) : Infinity;
   const maxPurchase = Math.max(0, Math.min(priceLimit, ctx.availableAssets + Math.min(productLimit, debtLimit), assetPriceLimit));
@@ -283,14 +283,14 @@ function policyEngines() {
     {
       id: 'bank',
       name: '일반 주담대',
-      loanCap: 10000000000,
+      loanCap: (ctx) => (ctx.firstHome ? 600000000 : 10000000000),
       homePriceCap: Infinity,
-      ltv: (ctx) => (ctx.region === 'regulated' ? 0.5 : 0.7),
+      ltv: (ctx) => (ctx.firstHome ? 0.8 : (ctx.region === 'regulated' ? 0.5 : 0.7)),
       debtRatio: 0.4,
       debtLabel: 'DSR 40%',
       rate: 4.5,
       eligibility: () => [],
-      notes: '은행권 일반 주담대는 실제 은행·차주별 심사와 스트레스 DSR에 따라 달라질 수 있습니다.'
+      notes: '은행권 일반 주담대는 간편 기준입니다. 생애최초는 LTV 80%와 대출한도 6억원 상한을 반영했고, 실제 한도는 은행·차주별 심사와 스트레스 DSR에 따라 달라질 수 있습니다.'
     },
     {
       id: 'didimdol',
