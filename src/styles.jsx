@@ -85,7 +85,8 @@ export const Main = styled.main`
   width: min(1120px, 100%);
   margin: 0 auto;
   padding: 22px clamp(16px, 4vw, 28px);
-  padding-bottom: 142px;
+  /* 하단 고정 요소(탭바 70px + 배너 광고 96px)에 콘텐츠가 가려지지 않도록 확보한다. */
+  padding-bottom: 178px;
 `;
 
 export const Stack = styled.div`
@@ -834,19 +835,17 @@ export const InlineAction = styled.div`
   gap: 9px;
 `;
 
+/**
+ * 토스 광고 정책상 광고 슬롯에는 색상·크기 등 임의 스타일을 입힐 수 없다.
+ * 위치만 잡고, 규격(width 100% / height 96px)은 문서 권장값을 그대로 따른다.
+ */
 export const BannerAd = styled.div`
   position: fixed;
   left: 0;
   right: 0;
   bottom: 70px;
   z-index: 6;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: #202b3a;
-  color: #f4d582;
-  font-weight: 900;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  height: 96px;
 `;
 
 export const TabBar = styled.nav`

@@ -5,6 +5,8 @@ export const STORAGE_KEYS = {
   loan: "estate-dday:loanForm",
   loans: "estate-dday:loans",
   prepayments: "estate-dday:prepayments",
+  adShownOnce: "estate-dday:adShownOnce",
+  adTriggerCount: "estate-dday:adTriggerCount",
 };
 
 export const initialBuyer = {

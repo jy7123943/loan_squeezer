@@ -7,7 +7,12 @@ import { BuyerTab } from './components/BuyerTab';
 import { BannerAd } from './components/BannerAd';
 import { LoanTab } from './components/LoanTab';
 import { Onboarding } from './components/Onboarding';
-import { preloadInterstitialAd, showInterstitialAd } from './lib/ad';
+import {
+  cleanupAllAds,
+  initBannerAds,
+  maybeShowInterstitialAd,
+  preloadInterstitialAd,
+} from './lib/ad';
 
 function tabFromPath(pathname) {
   return pathname.startsWith('/loans') ? 'loan' : 'buy';
@@ -28,8 +33,11 @@ export function App() {
     }
   }, []);
 
+  // 광고 SDK는 앱 최상위에서 한 번만 초기화하고, 전면 광고는 미리 로드해 둔다.
   useEffect(() => {
+    initBannerAds();
     preloadInterstitialAd();
+    return () => cleanupAllAds();
   }, []);
 
   useEffect(() => {
@@ -86,9 +94,9 @@ export function App() {
 
             <S.Main>
               {activeTab === 'buy' ? (
-                <BuyerTab onAd={() => showInterstitialAd()} />
+                <BuyerTab onAd={() => maybeShowInterstitialAd()} />
               ) : (
-                <LoanTab onAd={() => showInterstitialAd()} />
+                <LoanTab onAd={() => maybeShowInterstitialAd()} />
               )}
             </S.Main>
 
