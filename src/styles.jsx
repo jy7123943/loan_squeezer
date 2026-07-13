@@ -972,22 +972,6 @@ export const Overlay = styled.div`
   background: rgba(16, 26, 45, 0.62);
 `;
 
-export const AdModal = styled.div`
-  width: min(380px, 100%);
-  padding: 22px;
-  border-radius: 8px;
-  background: white;
-  color: ${navy};
-
-  h2 {
-    margin: 12px 0 8px;
-  }
-  p {
-    color: ${slate};
-    line-height: 1.5;
-  }
-`;
-
 export const EditorModal = styled.div`
   width: min(560px, 100%);
   max-height: min(760px, calc(100vh - 36px));

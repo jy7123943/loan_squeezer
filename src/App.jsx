@@ -4,9 +4,10 @@ import { STORAGE_KEYS } from './constants';
 import { load, save } from './utils';
 import * as S from './styles';
 import { BuyerTab } from './components/BuyerTab';
-import { Interstitial } from './components/Interstitial';
+import { BannerAd } from './components/BannerAd';
 import { LoanTab } from './components/LoanTab';
 import { Onboarding } from './components/Onboarding';
+import { preloadInterstitialAd, showInterstitialAd } from './lib/ad';
 
 function tabFromPath(pathname) {
   return pathname.startsWith('/loans') ? 'loan' : 'buy';
@@ -20,12 +21,15 @@ export function App() {
   const [homeTab, setHomeTab] = useState(() => load(STORAGE_KEYS.homeTab, 'buy'));
   const [onboarded, setOnboarded] = useState(() => load(STORAGE_KEYS.onboarded, false));
   const [activeTab, setActiveTab] = useState(() => (window.location.pathname === '/' ? load(STORAGE_KEYS.homeTab, 'buy') : tabFromPath(window.location.pathname)));
-  const [showInterstitial, setShowInterstitial] = useState(false);
 
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
+  }, []);
+
+  useEffect(() => {
+    preloadInterstitialAd();
   }, []);
 
   useEffect(() => {
@@ -82,13 +86,13 @@ export function App() {
 
             <S.Main>
               {activeTab === 'buy' ? (
-                <BuyerTab onAd={() => setShowInterstitial(true)} />
+                <BuyerTab onAd={() => showInterstitialAd()} />
               ) : (
-                <LoanTab onAd={() => setShowInterstitial(true)} />
+                <LoanTab onAd={() => showInterstitialAd()} />
               )}
             </S.Main>
 
-            <S.BannerAd>AD  |  내 집 마련 금융 정보 배너</S.BannerAd>
+            <BannerAd />
             <S.TabBar>
               <S.TabButton active={activeTab === 'buy'} onClick={() => switchTab('buy')}>
                 <Home size={20} /> 너도 살 수 있어
@@ -99,8 +103,6 @@ export function App() {
             </S.TabBar>
           </>
         )}
-
-        {showInterstitial && <Interstitial onClose={() => setShowInterstitial(false)} />}
       </S.Shell>
     </>
   );
